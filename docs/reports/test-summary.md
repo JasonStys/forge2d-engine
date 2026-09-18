@@ -20,5 +20,6 @@ C arena alignment/overflow/reset, bounded spatial hash versus brute-force oracle
 coordinate arithmetic, world-containment validation, A* path properties,
 scene/replay strict round trips, independent world/replay/render determinism, and profiler bounds.
 
-CI additionally provides GCC/Clang/MSVC Release builds, line/branch coverage, ASan/UBSan, libFuzzer,
-Linux SDL compilation, packaging, container smoke, repository validation, and CodeQL.
+The final hosted run passed GCC/Clang/MSVC Release builds, 88.75% line and 72.18% meaningful branch
+coverage, ASan/UBSan, libFuzzer, Linux SDL compilation, packaging, container smoke, repository
+validation, clang-tidy, and CodeQL. See [validation.md](validation.md) for immutable run links.
