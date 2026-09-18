@@ -14,7 +14,8 @@
 
 ## CI validation contract
 
-GitHub Actions must independently pass:
+The [final GitHub Actions run](https://github.com/JasonStys/forge2d-engine/actions/runs/35323345786)
+passed all nine jobs on 2026-09-18:
 
 - GCC and Clang Release builds, tests, demo, benchmark, installation, and CPack archive;
 - MSVC Release build, tests, demo, and benchmark;
@@ -22,11 +23,15 @@ GitHub Actions must independently pass:
 - Clang AddressSanitizer, UndefinedBehaviorSanitizer, and 20-second parser fuzz smoke;
 - pinned SDL3 Linux adapter compilation;
 - headless multi-stage container build/smoke;
-- clang-tidy, documentation/header/code-index checks, dependency review, and C/C++ CodeQL.
+- clang-tidy plus documentation, source-header, shell-syntax, and generated-index checks.
+
+The coverage artifact reports 781 of 880 lines (88.75%) and 615 of 852 meaningful branches
+(72.18%). The separate [CodeQL run](https://github.com/JasonStys/forge2d-engine/actions/runs/35323345714)
+also passed for the same commit. Compiler-generated throw and unreachable branches are excluded as
+documented in the testing strategy; the XML and detailed HTML report remain attached to the CI run.
 
 ## Explicit limitations
 
 The sample does not validate a physics solver, texture pipeline, audio, networking, editor, consoles,
 mobile devices, or production/mod security. Local timing is one-host evidence. Exact cross-compiler
-hash agreement is not yet asserted. The first cloud workflow establishes Linux/coverage/sanitizer
-evidence and is linked from the final handoff.
+hash agreement is not yet asserted.

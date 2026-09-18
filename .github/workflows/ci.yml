@@ -134,11 +134,16 @@ jobs:
           cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DFORGE2D_ENABLE_COVERAGE=ON
           cmake --build build --parallel 2
           ctest --test-dir build --output-on-failure
+          ./build/forge2d_benchmark
+          ./build/forge2d_arena assets/arena.scene out/coverage-demo
       - name: Enforce coverage and write reports
-        run: >-
-          gcovr --root . --filter 'include/' --filter 'src/' --filter 'platform/'
-          --exclude 'build/' --xml-pretty coverage.xml --html-details coverage/index.html
-          --fail-under-line 80 --fail-under-branch 70
+        run: |
+          mkdir -p coverage
+          gcovr --root . --filter 'include/' --filter 'src/' --filter 'platform/' \
+            --exclude 'build/' --xml-pretty --xml coverage.xml \
+            --html-details coverage/index.html \
+            --exclude-throw-branches --exclude-unreachable-branches \
+            --fail-under-line 80 --fail-under-branch 70
       - name: Upload coverage
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -179,7 +184,11 @@ jobs:
       - name: Check out source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Install build tools
-        run: sudo apt-get update && sudo apt-get install --yes ninja-build pkg-config
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes ninja-build pkg-config libx11-dev libxext-dev \
+            libxrandr-dev libxcursor-dev libxfixes-dev libxi-dev libxss-dev libxtst-dev \
+            libxkbcommon-dev
       - name: Build pinned SDL3 frontend
         run: |
           cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DFORGE2D_BUILD_SDL=ON
