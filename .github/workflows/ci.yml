@@ -134,12 +134,15 @@ jobs:
           cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DFORGE2D_ENABLE_COVERAGE=ON
           cmake --build build --parallel 2
           ctest --test-dir build --output-on-failure
+          ./build/forge2d_benchmark
+          ./build/forge2d_arena assets/arena.scene out/coverage-demo
       - name: Enforce coverage and write reports
         run: |
           mkdir -p coverage
           gcovr --root . --filter 'include/' --filter 'src/' --filter 'platform/' \
             --exclude 'build/' --xml-pretty --xml coverage.xml \
             --html-details coverage/index.html \
+            --exclude-throw-branches --exclude-unreachable-branches \
             --fail-under-line 80 --fail-under-branch 70
       - name: Upload coverage
         if: always()

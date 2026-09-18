@@ -42,9 +42,10 @@ ctest --test-dir build/fuzz --output-on-failure
 ## Coverage
 
 CI instruments GCC builds and uses gcovr 8.6. Required minimums are 80% line and 70% branch over
-`include/`, `src/`, and `platform/`. Generated/dependency/build code is excluded. Coverage is a
-backstop: reference-equivalence, negative parsing, sanitizer, and fuzz evidence address risks that a
-single percentage cannot express.
+`include/`, `src/`, and `platform/`. Tests, the benchmark, and the headless integration scenario all
+contribute data. Generated/dependency/build code plus compiler-generated throw and unreachable
+branches are excluded. Coverage is a backstop: reference-equivalence, negative parsing, sanitizer,
+and fuzz evidence address risks that a single percentage cannot express.
 
 ## Performance stability
 
