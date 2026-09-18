@@ -587,8 +587,9 @@ declaration locations. Regenerate after authored source changes.
 - Line 236: `first_image`
 - Line 237: `second_image`
 - Line 242: `player`
-- Line 247: `test_profiler_summary_is_bounded`
-- Line 248: `profiler`
-- Line 253: `summary`
-- Line 262: `main`
-- Line 273: `failures`
+- Line 247: `player_entity`
+- Line 253: `test_profiler_summary_is_bounded`
+- Line 254: `profiler`
+- Line 259: `summary`
+- Line 268: `main`
+- Line 279: `failures`

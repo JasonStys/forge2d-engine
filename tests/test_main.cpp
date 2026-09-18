@@ -240,8 +240,14 @@ void test_world_replay_and_render_are_deterministic() {
     require(first_image.pixel_hash() == second_image.pixel_hash() && first_image.pixel_hash() != 0U,
             "deterministic states must render identical non-empty frames");
     const auto player = first.player();
-    require(player.has_value() && first.destroy(*player), "player must be destroyable once");
-    require(!first.destroy(*player) && !first.valid(*player), "stale entity destruction must fail");
+    require(player.has_value(), "sample scene must contain a player");
+    if (!player.has_value()) {
+        throw std::runtime_error("player precondition failed");
+    }
+    const auto player_entity = player.value();
+    require(first.destroy(player_entity), "player must be destroyable once");
+    require(!first.destroy(player_entity) && !first.valid(player_entity),
+            "stale entity destruction must fail");
 }
 
 void test_profiler_summary_is_bounded() {

@@ -6,7 +6,7 @@
 |---|---|
 | MSVC compile | passed with `/W4 /WX /permissive- /sdl` |
 | Deterministic test executable | 8/8 groups passed |
-| CTest | 1/1 executable passed in 2.96 seconds |
+| CTest | 1/1 executable passed in 3.07 seconds |
 | Headless integration demo | passed; 360 ticks, 8 entities, 1 collision |
 | State hash | `2140247359617279822` |
 | Pixel hash | `14365382764149795246` |
