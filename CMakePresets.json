@@ -1,0 +1,57 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": { "major": 3, "minor": 25, "patch": 0 },
+  "configurePresets": [
+    {
+      "name": "dev",
+      "displayName": "Development",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/dev",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "FORGE2D_BUILD_TESTS": "ON",
+        "FORGE2D_BUILD_BENCHMARKS": "ON"
+      }
+    },
+    {
+      "name": "release",
+      "displayName": "Release",
+      "inherits": "dev",
+      "binaryDir": "${sourceDir}/build/release",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" }
+    },
+    {
+      "name": "sanitizers",
+      "displayName": "Address and undefined behavior sanitizers",
+      "inherits": "dev",
+      "binaryDir": "${sourceDir}/build/sanitizers",
+      "cacheVariables": { "FORGE2D_ENABLE_SANITIZERS": "ON" }
+    },
+    {
+      "name": "sdl",
+      "displayName": "Interactive SDL3 sample",
+      "inherits": "release",
+      "binaryDir": "${sourceDir}/build/sdl",
+      "cacheVariables": { "FORGE2D_BUILD_SDL": "ON" }
+    }
+  ],
+  "buildPresets": [
+    { "name": "dev", "configurePreset": "dev" },
+    { "name": "release", "configurePreset": "release" },
+    { "name": "sanitizers", "configurePreset": "sanitizers" },
+    { "name": "sdl", "configurePreset": "sdl" }
+  ],
+  "testPresets": [
+    {
+      "name": "dev",
+      "configurePreset": "dev",
+      "output": { "outputOnFailure": true }
+    },
+    {
+      "name": "sanitizers",
+      "configurePreset": "sanitizers",
+      "output": { "outputOnFailure": true }
+    }
+  ]
+}

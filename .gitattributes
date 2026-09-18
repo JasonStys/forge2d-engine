@@ -1,0 +1,8 @@
+# File: .gitattributes
+# Purpose: Normalize source files and identify generated or binary artifacts.
+* text=auto eol=lf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.png binary
+*.ppm binary
+docs/reports/generated/* linguist-generated=true

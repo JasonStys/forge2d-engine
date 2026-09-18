@@ -1,0 +1,209 @@
+# File: ci.yml
+# Purpose: Verify cross-platform builds, tests, coverage, sanitizers, fuzzing, SDL3, and packaging.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  linux:
+    name: Linux ${{ matrix.compiler }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - compiler: gcc
+            cc: gcc
+            cxx: g++
+          - compiler: clang
+            cc: clang
+            cxx: clang++
+    env:
+      CC: ${{ matrix.cc }}
+      CXX: ${{ matrix.cxx }}
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install build tools
+        run: sudo apt-get update && sudo apt-get install --yes ninja-build clang-format
+      - name: Verify formatting
+        run: >-
+          find apps benchmarks fuzz include platform src tests -type f
+          \( -name '*.c' -o -name '*.cpp' -o -name '*.h' -o -name '*.hpp' \)
+          -print0 | sort -z | xargs -0 clang-format --dry-run --Werror
+      - name: Configure and build
+        run: |
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+          cmake --build build --parallel 2
+      - name: Run deterministic tests
+        run: ctest --test-dir build --output-on-failure
+      - name: Run benchmark and headless demo
+        run: |
+          mkdir -p docs/reports/generated out/ci
+          ./build/forge2d_benchmark | tee docs/reports/generated/benchmark-${{ matrix.compiler }}.json
+          ./build/forge2d_arena assets/arena.scene out/ci
+      - name: Verify installable package
+        run: |
+          cmake --install build --prefix dist/install
+          cd build && cpack -G TGZ
+      - name: Upload executable evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: linux-${{ matrix.compiler }}-evidence
+          path: |
+            docs/reports/generated/benchmark-${{ matrix.compiler }}.json
+            out/ci
+            build/forge2d-engine-*.tar.gz
+          if-no-files-found: error
+
+  windows:
+    name: Windows MSVC
+    runs-on: windows-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Configure and build
+        run: |
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+          cmake --build build --parallel 2
+      - name: Run tests and benchmark
+        run: |
+          ctest --test-dir build --output-on-failure
+          New-Item -ItemType Directory -Force docs/reports/generated | Out-Null
+          ./build/forge2d_benchmark.exe | Tee-Object docs/reports/generated/benchmark-msvc.json
+          ./build/forge2d_arena.exe assets/arena.scene out/ci
+      - name: Upload Windows evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: windows-msvc-evidence
+          path: |
+            docs/reports/generated/benchmark-msvc.json
+            out/ci
+          if-no-files-found: error
+
+  static-analysis:
+    name: Clang-tidy static analysis
+    runs-on: ubuntu-latest
+    env:
+      CC: clang
+      CXX: clang++
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install analysis tools
+        run: sudo apt-get update && sudo apt-get install --yes ninja-build clang-tidy
+      - name: Generate compilation database
+        run: >-
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug
+          -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+      - name: Analyze authored targets
+        run: >-
+          clang-tidy -p build src/collision.cpp src/pathfinding.cpp src/replay.cpp src/scene.cpp
+          src/software_renderer.cpp src/world.cpp apps/forge2d_arena.cpp tests/test_main.cpp
+          benchmarks/benchmark.cpp
+
+  coverage:
+    name: Coverage gate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.14"
+      - name: Install coverage tools
+        run: |
+          sudo apt-get update && sudo apt-get install --yes ninja-build
+          python -m pip install gcovr==8.6
+      - name: Build and test with coverage
+        run: |
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DFORGE2D_ENABLE_COVERAGE=ON
+          cmake --build build --parallel 2
+          ctest --test-dir build --output-on-failure
+      - name: Enforce coverage and write reports
+        run: >-
+          gcovr --root . --filter 'include/' --filter 'src/' --filter 'platform/'
+          --exclude 'build/' --xml-pretty coverage.xml --html-details coverage/index.html
+          --fail-under-line 80 --fail-under-branch 70
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: coverage-report
+          path: |
+            coverage.xml
+            coverage
+          if-no-files-found: error
+
+  sanitizers-and-fuzz:
+    name: ASan, UBSan, and parser fuzz smoke
+    runs-on: ubuntu-latest
+    env:
+      CC: clang
+      CXX: clang++
+      ASAN_OPTIONS: detect_leaks=1:strict_string_checks=1
+      UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install build tools
+        run: sudo apt-get update && sudo apt-get install --yes ninja-build clang
+      - name: Build instrumented targets
+        run: |
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug \
+            -DFORGE2D_ENABLE_SANITIZERS=ON -DFORGE2D_BUILD_FUZZ=ON
+          cmake --build build --parallel 2
+      - name: Run sanitized tests
+        run: ctest --test-dir build --output-on-failure
+      - name: Fuzz scene parser
+        run: ./build/forge2d_scene_fuzz -max_total_time=20 -timeout=2 fuzz/corpus
+
+  sdl3:
+    name: SDL3 adapter build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install build tools
+        run: sudo apt-get update && sudo apt-get install --yes ninja-build pkg-config
+      - name: Build pinned SDL3 frontend
+        run: |
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DFORGE2D_BUILD_SDL=ON
+          cmake --build build --target forge2d_arena_sdl --parallel 2
+
+  repository:
+    name: Repository contract
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Validate documentation and generated index
+        run: |
+          node scripts/validate-repository.mjs
+          node scripts/generate-code-index.mjs --check
+          bash -n scripts/verify.sh
+
+  container:
+    name: Headless container
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Build hardened headless image
+        run: docker build --tag forge2d-engine:ci .
+      - name: Smoke test container
+        run: docker run --rm --read-only --tmpfs /tmp forge2d-engine:ci

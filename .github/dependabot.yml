@@ -1,0 +1,14 @@
+# File: dependabot.yml
+# Purpose: Propose bounded weekly updates for Docker and GitHub Actions dependencies.
+version: 2
+updates:
+  - package-ecosystem: docker
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 3
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 3

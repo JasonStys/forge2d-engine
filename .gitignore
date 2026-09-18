@@ -1,0 +1,19 @@
+# File: .gitignore
+# Purpose: Exclude build products, editor state, generated reports, and local runtime output.
+.cache/
+.idea/
+.vs/
+.vscode/
+build/
+cmake-build-*/
+compile_commands.json
+coverage/
+dist/
+out/
+*.gcda
+*.gcno
+*.profraw
+*.profdata
+*.user
+docs/reports/generated/*
+!docs/reports/generated/.gitkeep

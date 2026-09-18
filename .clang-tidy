@@ -1,0 +1,27 @@
+# File: .clang-tidy
+# Purpose: Enable portable correctness, safety, performance, and modernization diagnostics.
+Checks: >-
+  -*,
+  bugprone-assert-side-effect,
+  bugprone-dangling-handle,
+  bugprone-exception-escape,
+  bugprone-infinite-loop,
+  bugprone-misplaced-widening-cast,
+  bugprone-narrowing-conversions,
+  bugprone-not-null-terminated-result,
+  bugprone-signed-char-misuse,
+  bugprone-sizeof-expression,
+  bugprone-string-constructor,
+  bugprone-suspicious-*,
+  bugprone-unchecked-optional-access,
+  bugprone-use-after-move,
+  clang-analyzer-*,
+  -clang-analyzer-optin.core.EnumCastOutOfRange,
+  performance-*,
+  portability-*,
+  readability-container-size-empty,
+  readability-duplicate-include,
+  readability-misleading-indentation,
+  readability-redundant-*
+WarningsAsErrors: '*'
+HeaderFilterRegex: '^(include|src|apps|platform|tests|benchmarks)/'

@@ -1,0 +1,14 @@
+# File: .dockerignore
+# Purpose: Keep local builds, generated evidence, VCS metadata, and editor state out of images.
+.git
+.github
+.cache
+.idea
+.vs
+.vscode
+build
+coverage
+dist
+out
+docs/reports/generated
+*.user
