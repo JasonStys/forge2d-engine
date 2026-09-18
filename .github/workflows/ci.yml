@@ -138,7 +138,8 @@ jobs:
         run: |
           mkdir -p coverage
           gcovr --root . --filter 'include/' --filter 'src/' --filter 'platform/' \
-            --exclude 'build/' --xml-pretty coverage.xml --html-details coverage/index.html \
+            --exclude 'build/' --xml-pretty --xml coverage.xml \
+            --html-details coverage/index.html \
             --fail-under-line 80 --fail-under-branch 70
       - name: Upload coverage
         if: always()
