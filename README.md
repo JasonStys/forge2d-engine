@@ -91,11 +91,11 @@ bash scripts/verify.sh
 The local MSVC verification has eight deterministic test groups passing with `/W4 /WX /sdl`, the
 SDL3 adapter compiled successfully, and all benchmark budgets passed:
 
-| Scenario | Workload | Local result | Budget |
-|---|---:|---:|---:|
-| Sparse-set lifecycle | 20,000 entities | 10.37 ms | 1,000 ms |
-| Spatial broadphase | 20,000 AABBs | 55.81 ms | 2,500 ms |
-| Fixed simulation | 5,000 entities × 240 ticks | 119.92 ms | 2,500 ms |
+| Scenario             |                   Workload | Local result |   Budget |
+| -------------------- | -------------------------: | -----------: | -------: |
+| Sparse-set lifecycle |            20,000 entities |     10.37 ms | 1,000 ms |
+| Spatial broadphase   |               20,000 AABBs |     55.81 ms | 2,500 ms |
+| Fixed simulation     | 5,000 entities × 240 ticks |    119.92 ms | 2,500 ms |
 
 Timing is host-specific and is not a frame-rate claim. CI reruns the budgets on GCC, Clang, and
 MSVC and retains machine-readable reports. See [docs/reports/benchmark.md](docs/reports/benchmark.md)
@@ -103,18 +103,18 @@ and [docs/testing.md](docs/testing.md).
 
 ## Repository guide
 
-| Area | Responsibility |
-|---|---|
-| `include/forge2d/` | public engine contracts and header-only storage/timing utilities |
-| `src/` | collision, pathfinding, parsing, replay, world, software, and SDL implementation |
-| `platform/` | bounded C17 arena API and implementation |
-| `apps/` | headless evidence demo and interactive SDL3 arena |
-| `assets/` | small versioned text scene with no third-party art |
-| `tests/` | deterministic unit, property/reference, negative, and integration tests |
-| `fuzz/` | libFuzzer target and seed corpus for the scene trust boundary |
-| `benchmarks/` | executable regression budgets and JSON output |
-| `docs/` | architecture, formats, algorithms, operations, research, and reports |
-| `.github/` | cross-platform CI, CodeQL, dependency review, and update automation |
+| Area               | Responsibility                                                                   |
+| ------------------ | -------------------------------------------------------------------------------- |
+| `include/forge2d/` | public engine contracts and header-only storage/timing utilities                 |
+| `src/`             | collision, pathfinding, parsing, replay, world, software, and SDL implementation |
+| `platform/`        | bounded C17 arena API and implementation                                         |
+| `apps/`            | headless evidence demo and interactive SDL3 arena                                |
+| `assets/`          | small versioned text scene with no third-party art                               |
+| `tests/`           | deterministic unit, property/reference, negative, and integration tests          |
+| `fuzz/`            | libFuzzer target and seed corpus for the scene trust boundary                    |
+| `benchmarks/`      | executable regression budgets and JSON output                                    |
+| `docs/`            | architecture, formats, algorithms, operations, research, and reports             |
+| `.github/`         | cross-platform CI, CodeQL, dependency review, and update automation              |
 
 Every authored file is summarized in [docs/file-catalog.md](docs/file-catalog.md); exact class,
 function, and important-variable locations are generated in
@@ -139,6 +139,7 @@ unverified compilers/platforms. See [docs/operations.md](docs/operations.md).
 - [Testing strategy](docs/testing.md)
 - [Operations and release](docs/operations.md)
 - [Research](docs/research.md)
+- [Latest maintenance audit](docs/reports/maintenance-audit-2026-09-18.md)
 
 ## License
 
