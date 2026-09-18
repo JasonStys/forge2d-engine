@@ -1,6 +1,6 @@
 # File: Dockerfile
 # Purpose: Build and run the dependency-free headless demonstration in a non-root container.
-FROM ubuntu:24.04 AS build
+FROM ubuntu:26.04 AS build
 
 RUN apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get install --yes --no-install-recommends \
@@ -13,7 +13,7 @@ RUN cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release \
     && ctest --test-dir build --output-on-failure \
     && ./build/forge2d_benchmark
 
-FROM ubuntu:24.04 AS runtime
+FROM ubuntu:26.04 AS runtime
 RUN useradd --create-home --uid 10001 forge2d \
     && mkdir /app /output \
     && chown forge2d:forge2d /output
