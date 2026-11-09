@@ -15,6 +15,7 @@
 
 #include "arena.h"
 
+#include <algorithm>
 #include <array>
 #include <chrono>
 #include <cstddef>
@@ -152,6 +153,7 @@ void test_spatial_hash_matches_brute_force() {
             items.push_back(
                 {{index, 0U},
                  {{coordinate(random), coordinate(random)}, {extent(random), extent(random)}}});
+            items.back().filter = {1U << (index % 32U), static_cast<std::uint32_t>(random())};
         }
         require(spatial_hash.query(items) == forge2d::brute_force_collisions(items),
                 "spatial hash must match quadratic reference exactly");
@@ -165,6 +167,84 @@ void test_spatial_hash_matches_brute_force() {
             static_cast<void>(spatial_hash.query({{{0U, 0U}, {{0, 0}, {1'500'000, 1'500'000}}}}));
         },
         "a single item must not allocate an unbounded number of cells");
+}
+
+void test_collision_category_masks() {
+    // Independent hand matrix: the player includes characters/zones, but not decorations;
+    // both participants must opt in, and a zero mask deliberately disables matching.
+    forge2d::SpatialHash grid{10};
+    std::vector<forge2d::CollisionItem> items{
+        {{0U, 0U}, {{0, 0}, {10, 10}}, {1U, 6U}}, {{1U, 0U}, {{0, 0}, {10, 10}}, {2U, 1U}},
+        {{2U, 0U}, {{0, 0}, {10, 10}}, {4U, 1U}}, {{3U, 0U}, {{0, 0}, {10, 10}}, {8U, 0xFFFFFFFFU}},
+        {{4U, 0U}, {{0, 0}, {10, 10}}, {2U, 0U}},
+    };
+    const std::vector<forge2d::CollisionPair> expected{{{0U, 0U}, {1U, 0U}}, {{0U, 0U}, {2U, 0U}}};
+    require(grid.query(items) == expected,
+            "hand inclusion matrix must yield exactly player/character and player/zone");
+    require(forge2d::brute_force_collisions(items) == expected,
+            "independent reference must honor both masks");
+    std::reverse(items.begin(), items.end());
+    require(grid.query(items) == expected, "filter results must keep canonical pair order");
+    const std::vector<forge2d::CollisionItem> high{
+        {{0U, 0U}, {{0, 0}, {10, 10}}, {0x80000000U, 1U}},
+        {{1U, 0U}, {{0, 0}, {10, 10}}, {1U, 0x80000000U}},
+    };
+    require(grid.query(high).size() == 1U,
+            "highest category bit must not become signed or overflow");
+    for (const auto invalid : {0U, 3U}) {
+        const std::vector<forge2d::CollisionItem> bad{
+            {{0U, 0U}, {{0, 0}, {10, 10}}, {invalid, 1U}}};
+        require_throws([&] { static_cast<void>(grid.query(bad)); },
+                       "invalid query category must fail");
+        require_throws([&] { static_cast<void>(forge2d::brute_force_collisions(bad)); },
+                       "invalid reference category must fail");
+    }
+}
+
+void test_collision_scene_migration_and_hash() {
+    const std::string legacy = "FORGE2D_SCENE 1\nbounds 0 0 1000 1000\nentities 1\nentity item 500 "
+                               "500 0 0 10 10 1234 0 0\n";
+    auto scene = forge2d::parse_scene(legacy);
+    require(scene.entities[0].body.filter == forge2d::CollisionFilter{},
+            "version1 scenes retain all-category inclusion defaults");
+    const auto serialized = forge2d::serialize_scene(scene);
+    require(serialized.starts_with("FORGE2D_SCENE 2\n") &&
+                forge2d::parse_scene(serialized) == scene,
+            "legacy scenes migrate to canonical version2 without losing any field");
+    auto original = forge2d::World::from_scene(scene);
+    scene.entities[0].body.filter = {0x80000000U, 0U};
+    require(forge2d::parse_scene(forge2d::serialize_scene(scene)) == scene,
+            "bit31 and zero mask round-trip");
+    auto filtered = forge2d::World::from_scene(scene);
+    require(original.state_hash() != filtered.state_hash(),
+            "collision configuration belongs in replay state fingerprint");
+    const auto before = original.state_hash();
+    require_throws(
+        [&] { static_cast<void>(original.spawn({{500, 500}}, {{0, 0}, {10, 10}, {3U, 1U}}, {})); },
+        "spawn must reject ambiguous category");
+    require(original.state_hash() == before && original.entity_count() == 1U,
+            "invalid spawn is atomic");
+    auto paired = scene;
+    paired.entities[0].body.filter = {};
+    paired.entities.push_back(paired.entities[0]);
+    paired.entities[1].name = "second";
+    const auto enabled = forge2d::World::from_scene(paired);
+    require(enabled.collision_pairs().size() == 1U,
+            "World must preserve legacy all-inclusive matching");
+    paired.entities[1].body.filter.mask = 0U;
+    auto disabled = forge2d::World::from_scene(paired);
+    disabled.step({});
+    require(disabled.collision_pairs().empty(),
+            "World collision items must carry per-body filter configuration");
+    require(disabled.snapshot().size() == 2U,
+            "query filtering must not hide or delete rendered entities");
+    const std::string prefix = "FORGE2D_SCENE 2\nbounds 0 0 1000 1000\nentities 1\nentity item 500 "
+                               "500 0 0 10 10 1234 0 0 ";
+    for (const auto* suffix :
+         {"0 1", "3 1", "4294967296 1", "1 -1", "1 4294967296", "1", "1 1 extra"}) {
+        require_throws([&] { static_cast<void>(forge2d::parse_scene(prefix + suffix + "\n")); },
+                       "invalid version2 filter fields fail closed");
+    }
 }
 
 void test_astar_returns_valid_shortest_path() {
@@ -271,6 +351,8 @@ int main() { // NOLINT(bugprone-exception-escape)
         {"entity pool and sparse-set properties", test_entity_pool_and_sparse_set_properties},
         {"C arena alignment and overflow", test_c_arena_alignment_and_overflow},
         {"spatial hash reference equivalence", test_spatial_hash_matches_brute_force},
+        {"collision categories and masks", test_collision_category_masks},
+        {"collision scene migration and fingerprint", test_collision_scene_migration_and_hash},
         {"A-star shortest path", test_astar_returns_valid_shortest_path},
         {"scene and replay round trip", test_scene_and_replay_round_trip},
         {"world replay and render determinism", test_world_replay_and_render_are_deterministic},

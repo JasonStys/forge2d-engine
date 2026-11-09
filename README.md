@@ -14,6 +14,20 @@ build engineering, and honest performance evidence in a codebase a reviewer can 
 
 ## What it demonstrates
 
+The collision system supports **bidirectional categories and inclusion masks**.
+Give each body one category bit and the categories it accepts; an overlap is
+reported only when both bodies include the other. A zero mask disables matching
+without hiding, deleting or stopping the entity. Sprite rendering layers remain
+independent. The strict scene-v2 grammar stores the filters, with explicit v1
+default migration and filter-inclusive replay fingerprints.
+
+Run `forge2d_arena assets/collision-layers.scene out/layers` to see a fictional
+player/character/pickup-zone example. The actual CLI writes initial/final matched
+pair CSV, canonical v2 scene, replay and rendered PPM. See [format/API](docs/asset-format.md)
+and [validation/limits](docs/reports/practical-workflows-20261109.md). These are
+overlap queries; physical object collision response and trigger callbacks remain
+application responsibilities.
+
 - C++20 engine core with strict ownership and no runtime dependency.
 - C17 linear arena as a narrow, tested cross-language/platform boundary.
 - Generation-safe entity handles and sparse-set component storage with expected O(1) access,

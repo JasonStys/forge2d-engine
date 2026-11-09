@@ -7,6 +7,7 @@
 
 #include <algorithm>
 #include <cctype>
+#include <limits>
 #include <set>
 #include <sstream>
 #include <stdexcept>
@@ -41,6 +42,9 @@ void validate_scene(const Scene& scene) {
     std::set<std::string> names;
     std::size_t players{};
     for (const auto& entity : scene.entities) {
+        if (!entity.body.filter.valid()) {
+            throw std::invalid_argument("scene collision category must contain exactly one bit");
+        }
         if (!valid_name(entity.name) || !names.insert(entity.name).second) {
             throw std::invalid_argument("scene entity names must be unique safe identifiers");
         }
@@ -63,7 +67,7 @@ void validate_scene(const Scene& scene) {
 std::string serialize_scene(const Scene& scene) {
     validate_scene(scene);
     std::ostringstream output;
-    output << "FORGE2D_SCENE 1\n";
+    output << "FORGE2D_SCENE 2\n";
     output << "bounds " << scene.minimum.x << ' ' << scene.minimum.y << ' ' << scene.maximum.x
            << ' ' << scene.maximum.y << '\n';
     output << "entities " << scene.entities.size() << '\n';
@@ -72,7 +76,8 @@ std::string serialize_scene(const Scene& scene) {
                << entity.transform.position.y << ' ' << entity.body.velocity.x << ' '
                << entity.body.velocity.y << ' ' << entity.body.half_extent.x << ' '
                << entity.body.half_extent.y << ' ' << entity.sprite.rgba << ' '
-               << entity.sprite.layer << ' ' << (entity.player ? 1 : 0) << '\n';
+               << entity.sprite.layer << ' ' << (entity.player ? 1 : 0) << ' '
+               << entity.body.filter.category << ' ' << entity.body.filter.mask << '\n';
     }
     return output.str();
 }
@@ -80,9 +85,11 @@ std::string serialize_scene(const Scene& scene) {
 Scene parse_scene(std::string_view text) {
     std::istringstream input{std::string{text}};
     std::string line_text;
-    if (!std::getline(input, line_text) || line_text != "FORGE2D_SCENE 1") {
+    if (!std::getline(input, line_text) ||
+        (line_text != "FORGE2D_SCENE 1" && line_text != "FORGE2D_SCENE 2")) {
         throw std::invalid_argument("unsupported scene header");
     }
+    const bool filtered = line_text == "FORGE2D_SCENE 2";
     Scene scene;
     std::string key;
     if (!std::getline(input, line_text)) {
@@ -124,6 +131,16 @@ Scene parse_scene(std::string_view text) {
               layer >> player) ||
             key != "entity" || layer < -32'768 || layer > 32'767 || (player != 0 && player != 1)) {
             throw std::invalid_argument("invalid scene entity");
+        }
+        if (filtered) {
+            std::uint64_t category{}, mask{};
+            if (!(line >> category >> mask) ||
+                category > std::numeric_limits<std::uint32_t>::max() ||
+                mask > std::numeric_limits<std::uint32_t>::max()) {
+                throw std::invalid_argument("invalid scene collision filter");
+            }
+            entity.body.filter = {static_cast<std::uint32_t>(category),
+                                  static_cast<std::uint32_t>(mask)};
         }
         require_line_end(line);
         entity.sprite.layer = static_cast<std::int16_t>(layer);
