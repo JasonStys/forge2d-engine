@@ -45,6 +45,9 @@ std::vector<CollisionPair> SpatialHash::query(const std::vector<CollisionItem>& 
     std::map<std::pair<std::int64_t, std::int64_t>, std::vector<std::size_t>> cells;
     for (std::size_t item_index = 0; item_index < items.size(); ++item_index) {
         const auto& bounds = items[item_index].bounds;
+        if (!items[item_index].filter.valid()) {
+            throw std::invalid_argument("collision category must contain exactly one bit");
+        }
         if (bounds.half_extent.x <= 0 || bounds.half_extent.y <= 0) {
             throw std::invalid_argument("collision half extents must be positive");
         }
@@ -73,7 +76,9 @@ std::vector<CollisionPair> SpatialHash::query(const std::vector<CollisionItem>& 
                  ++right_index) {
                 const auto& left = items[members[left_index]];
                 const auto& right = items[members[right_index]];
-                if (intersects(left.bounds, right.bounds)) {
+                if ((left.filter.category & right.filter.mask) != 0U &&
+                    (right.filter.category & left.filter.mask) != 0U &&
+                    intersects(left.bounds, right.bounds)) {
                     pairs.insert(normalized_pair(left.entity, right.entity));
                 }
             }
@@ -83,10 +88,23 @@ std::vector<CollisionPair> SpatialHash::query(const std::vector<CollisionItem>& 
 }
 
 std::vector<CollisionPair> brute_force_collisions(const std::vector<CollisionItem>& items) {
+    for (const auto& item : items) {
+        if (!item.filter.valid()) {
+            throw std::invalid_argument("collision category must contain exactly one bit");
+        }
+    }
     std::vector<CollisionPair> pairs;
     for (std::size_t left_index = 0; left_index < items.size(); ++left_index) {
         for (std::size_t right_index = left_index + 1U; right_index < items.size(); ++right_index) {
-            if (intersects(items[left_index].bounds, items[right_index].bounds)) {
+            const auto& left = items[left_index];
+            const auto& right = items[right_index];
+            // Independently apply both caller inclusion decisions before the quadratic geometry
+            // oracle.
+            if ((left.filter.mask & right.filter.category) == 0U ||
+                (right.filter.mask & left.filter.category) == 0U) {
+                continue;
+            }
+            if (intersects(left.bounds, right.bounds)) {
                 pairs.push_back(
                     normalized_pair(items[left_index].entity, items[right_index].entity));
             }

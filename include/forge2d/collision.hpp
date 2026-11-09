@@ -5,6 +5,7 @@
  */
 #pragma once
 
+#include "forge2d/components.hpp"
 #include "forge2d/entity.hpp"
 #include "forge2d/math.hpp"
 
@@ -16,6 +17,7 @@ namespace forge2d {
 struct CollisionItem {
     Entity entity{};
     Aabb bounds{};
+    CollisionFilter filter{};
 };
 
 struct CollisionPair {

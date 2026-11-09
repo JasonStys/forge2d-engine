@@ -3,6 +3,11 @@
 Let `n` be live entities, `c` entities with one component type, `p` collision candidate pairs,
 `k` occupied spatial cells, `V/E` pathfinding vertices/edges, `f` replay frames, and `w×h` pixels.
 
+Category/mask checks add O(1) work per candidate before the existing exact geometry
+test; they do not change broadphase worst-case complexity. The headless demo
+exports only initial/final matched-pair snapshots, not unbounded per-tick history.
+CSV lookup uses O(n) filter storage and O(log n) per matched endpoint.
+
 | Operation | Time | Additional space | Notes |
 |---|---:|---:|---|
 | Entity create/destroy/valid | amortized O(1) / O(1) / O(1) | O(n) total | intrusive free-index list plus generation/alive arrays |

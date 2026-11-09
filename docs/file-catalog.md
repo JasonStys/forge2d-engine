@@ -50,7 +50,7 @@ For declaration-level locations, see the generated [code index](code-index.md).
 | `src/collision.cpp` | Builds bounded spatial cells, de-duplicates candidates, and exact-tests AABBs deterministically. |
 | `src/pathfinding.cpp` | Implements deterministic A* with stable tie-breaking and bounded storage. |
 | `src/replay.cpp` | Parses and serializes capped, version-one input replays. |
-| `src/scene.cpp` | Parses, validates, and serializes capped, version-one scene descriptions. |
+| `src/scene.cpp` | Parses bounded v1/v2 scenes, migrates legacy filter defaults and serializes canonical v2. |
 | `src/sdl_renderer.cpp` | Maps SDL3 events and accelerated rectangles onto the platform-neutral engine API. |
 | `src/software_renderer.cpp` | Rasterizes clipped rectangles into deterministic RGBA memory and PPM evidence. |
 | `src/world.cpp` | Implements entity lifetime, safe movement, bounds response, snapshots, collision input, and stable hashes. |
@@ -64,6 +64,9 @@ For declaration-level locations, see the generated [code index](code-index.md).
 | `apps/forge2d_arena.cpp` | Runs the display-free autopilot scenario and emits replay, screenshot, and JSON evidence. |
 | `apps/forge2d_arena_sdl.cpp` | Runs the optional interactive fixed-step SDL3 arena. |
 | `assets/arena.scene` | Supplies the original, text-only demonstration arena and entities. |
+| `assets/collision-layers.scene` | Fictional player/character/pickup/decor category-mask inclusion example. |
+| `fuzz/corpus/collision-filter.scene` | Valid v2 parser seed with highest category bit and disabled mask. |
+| `docs/reports/practical-workflows-20261109.md` | Local category/mask verification, API behavior and compatibility limits. |
 | `benchmarks/benchmark.cpp` | Measures component lifecycle, collision broadphase, and fixed-tick throughput against regression budgets. |
 | `tests/test_main.cpp` | Runs deterministic unit, randomized reference, negative, integration, and replay tests without a test dependency. |
 | `fuzz/scene_parser_fuzz.cpp` | Exposes the scene parser to LLVM libFuzzer and asserts successful parse/serialize stability. |

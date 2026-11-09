@@ -15,6 +15,7 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <map>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -65,13 +66,37 @@ int main(int argc, char** argv) { // NOLINT(bugprone-exception-escape)
             argc > 2 ? std::filesystem::path{argv[2]} : std::filesystem::path{"out/demo"};
         const auto scene = forge2d::parse_scene(read_text(scene_path));
         auto world = forge2d::World::from_scene(scene);
+        const auto initial_pairs = world.collision_pairs();
         const auto replay = build_autopilot(360U);
         for (const auto frame : replay.frames) {
             world.step(frame);
         }
+        const auto final_pairs = world.collision_pairs();
         forge2d::Image image{640U, 360U};
         forge2d::render_world(image, world);
         std::filesystem::create_directories(output_directory);
+        std::ofstream contacts{output_directory / "collision-pairs.csv"};
+        contacts.exceptions(std::ios::badbit | std::ios::failbit);
+        contacts << "snapshot,tick,first_index,first_generation,second_index,second_generation,"
+                    "first_category,first_mask,second_category,second_mask\n";
+        std::map<forge2d::Entity, forge2d::CollisionFilter> filters;
+        for (const auto& entity : world.snapshot())
+            filters.emplace(entity.entity, entity.body.filter);
+        const auto write_pairs = [&](const char* snapshot, std::uint64_t tick, const auto& pairs) {
+            for (const auto& pair : pairs) {
+                const auto& first = filters.at(pair.first);
+                const auto& second = filters.at(pair.second);
+                contacts << snapshot << ',' << tick << ',' << pair.first.index << ','
+                         << pair.first.generation << ',' << pair.second.index << ','
+                         << pair.second.generation << ',' << first.category << ',' << first.mask
+                         << ',' << second.category << ',' << second.mask << '\n';
+            }
+        };
+        write_pairs("initial", 0U, initial_pairs);
+        write_pairs("final", world.tick(), final_pairs);
+        std::ofstream canonical{output_directory / "scene-v2.scene"};
+        canonical.exceptions(std::ios::badbit | std::ios::failbit);
+        canonical << forge2d::serialize_scene(scene);
         image.write_ppm(output_directory / "arena-final.ppm");
         std::ofstream{output_directory / "autopilot.replay"} << forge2d::serialize_replay(replay);
 
@@ -83,7 +108,9 @@ int main(int argc, char** argv) { // NOLINT(bugprone-exception-escape)
                   << "  \"engine_version\": \"" << FORGE2D_VERSION << "\",\n"
                   << "  \"ticks\": " << world.tick() << ",\n"
                   << "  \"entities\": " << world.entity_count() << ",\n"
-                  << "  \"collisions\": " << world.collision_pairs().size() << ",\n"
+                  << "  \"collisions\": " << final_pairs.size() << ",\n"
+                  << "  \"initial_filtered_pairs\": " << initial_pairs.size() << ",\n"
+                  << "  \"canonical_scene_schema\": 2,\n"
                   << "  \"state_hash\": " << world.state_hash() << ",\n"
                   << "  \"pixel_hash\": " << image.pixel_hash() << ",\n"
                   << "  \"arena_peak_bytes\": " << arena.peak << "\n"

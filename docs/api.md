@@ -37,6 +37,19 @@ remaining fraction for presentation interpolation; interpolation does not mutate
 
 ## Collision
 
+`CollisionFilter {category, mask}` belongs to each `KinematicBody` and raw
+`CollisionItem`. `category` is exactly one of32 bits, including `0x80000000`;
+zero/multi-bit categories are rejected before query/spawn/serialization. `mask`
+may contain any32-bit combination; zero matches nothing. Both directions must
+allow the other's category before geometry is tested. Defaults(category1, all
+mask bits) preserve legacy inclusion behavior. Sprite.layer affects drawing only.
+Raw queries operate on supplied handles; only the World owns generation validity.
+
+Filters do not apply forces, block movement, remove entities or infer callbacks.
+World passes each body's filter to the existing spatial query. State fingerprints
+now include category/mask, so historic numeric fingerprints change even when
+v1 scenes retain equivalent default behavior. Replay input grammar remains v1.
+
 `SpatialHash(cell_size)::query(items)` performs broadphase candidate generation and exact AABB
 filtering. `brute_force_collisions(items)` is the O(n²) reference oracle. Edge contact alone is not
 penetration. Cell size and item half extents must be positive. Queries accept at most 100,000 items,

@@ -95,6 +95,9 @@ World::World(Vec2i minimum, Vec2i maximum, std::int32_t collision_cell_size)
 }
 
 Entity World::spawn(Transform transform, KinematicBody body, Sprite sprite, bool player) {
+    if (!body.filter.valid()) {
+        throw std::invalid_argument("body collision category must contain exactly one bit");
+    }
     if (body.half_extent.x <= 0 || body.half_extent.y <= 0) {
         throw std::invalid_argument("body half extents must be positive");
     }
@@ -196,8 +199,9 @@ std::vector<CollisionItem> World::collision_items() const {
     result.reserve(bodies_.size());
     for (const auto entity : bodies_.entities()) {
         if (transforms_.contains(entity)) {
-            result.push_back(
-                {entity, {transforms_.get(entity).position, bodies_.get(entity).half_extent}});
+            result.push_back({entity,
+                              {transforms_.get(entity).position, bodies_.get(entity).half_extent},
+                              bodies_.get(entity).filter});
         }
     }
     return result;
@@ -218,6 +222,8 @@ std::uint64_t World::state_hash() const {
         hash_u64(hash, signed_bits(value.body.velocity.y));
         hash_u64(hash, signed_bits(value.body.half_extent.x));
         hash_u64(hash, signed_bits(value.body.half_extent.y));
+        hash_u64(hash, value.body.filter.category);
+        hash_u64(hash, value.body.filter.mask);
         hash_u64(hash, value.sprite.rgba);
         hash_u64(hash, static_cast<std::uint16_t>(value.sprite.layer));
         hash_u64(hash, value.player ? 1U : 0U);

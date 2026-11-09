@@ -1,0 +1,4 @@
+FORGE2D_SCENE 2
+bounds 0 0 1000 1000
+entities 1
+entity item 500 500 0 0 10 10 1234 0 0 2147483648 0
