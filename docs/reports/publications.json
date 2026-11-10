@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "project": "forge2d-engine",
+  "author": "Jason Stys",
+  "editionDate": "2026-11-09",
+  "sourceBaseline": "43fd93f79043231230a4c19346bdb8a4c356d9ce",
+  "sourceUrl": "https://github.com/JasonStys/forge2d-engine/tree/43fd93f79043231230a4c19346bdb8a4c356d9ce",
+  "functionalEvidenceBaseline": "43fd93f79043231230a4c19346bdb8a4c356d9ce",
+  "evidenceObservedAt": "2026-11-10T05:25:40.628667+00:00",
+  "workflowEvidence": [
+    {
+      "conclusion": "success",
+      "databaseId": 42714064217,
+      "event": "push",
+      "headSha": "43fd93f79043231230a4c19346bdb8a4c356d9ce",
+      "name": "CI",
+      "status": "completed",
+      "url": "https://github.com/JasonStys/forge2d-engine/actions/runs/42714064217"
+    },
+    {
+      "conclusion": "success",
+      "databaseId": 42714064589,
+      "event": "push",
+      "headSha": "43fd93f79043231230a4c19346bdb8a4c356d9ce",
+      "name": "CodeQL",
+      "status": "completed",
+      "url": "https://github.com/JasonStys/forge2d-engine/actions/runs/42714064589"
+    }
+  ],
+  "summary": "The implementation adds bidirectional collision category and mask filters, versioned scene migration, deterministic state hashes and initial/final overlap CSV inspection.",
+  "rationale": "Supports practical game-world collision layers and reproducible debugging against independent geometry oracles.",
+  "limitations": [
+    "Category/mask filtering selects AABB query candidates; it does not add physical collision response, enter/exit callbacks or navigation changes.",
+    "Filter words change numeric state fingerprints even for legacy default filters; replay input grammar remains version 1.",
+    "Raw queries cannot establish current entity-generation validity; World owns lifetime checks. This is a fictional integer 2D game engine."
+  ],
+  "documents": [
+    {
+      "filename": "project-guide.docx",
+      "mimeType": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "bytes": 45218,
+      "sha256": "f8b0f4ed73dd19cd3d58991091df0519c93916d864c10f4b392ecbfd1f3372c1",
+      "sourceBaseline": "43fd93f79043231230a4c19346bdb8a4c356d9ce",
+      "visualReview": {
+        "approved": true,
+        "method": "Every rendered page individually viewed at readable original resolution",
+        "pageCount": 5,
+        "renderedPageSha256": {
+          "page-1.png": "ed3d4acc6f5d060dfbbf0059d8b32fd40718cfab01df809fd302aaa5d73219e8",
+          "page-2.png": "69892ce958fb026019c2e321e984f8a13ec7541b7f0822caa2bd8cb48a9ea564",
+          "page-3.png": "ef62413c61cdc31de1e23d4c1cc29bd8c981a6288c99ea64e1c5cc5c8e830230",
+          "page-4.png": "db32dd727c0a38ed9920b60bfd22b32cc87b83421fd83565419fec1178e3a8b0",
+          "page-5.png": "46d3b7b19fd6fff5046c29d59c95b0a2a75983976541904288b815029c69b91c"
+        }
+      }
+    }
+  ],
+  "scope": "Reviewed documentation editions of the cited source. Checksums identify bytes, not authorship. Historical measurements retain their own dates; integration CI must be checked separately."
+}
