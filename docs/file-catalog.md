@@ -95,3 +95,12 @@ For declaration-level locations, see the generated [code index](code-index.md).
 | `docs/reports/test-summary.md` | Records test scope, dated local results, and limitations. |
 | `docs/reports/validation.md` | Records compiler, SDL, repository, artifact, and pending hosted-CI validation. |
 | `docs/reports/generated/.gitkeep` | Preserves the otherwise-empty directory used for generated CI reports. |
+
+## Reviewed documentation editions
+
+| File | Responsibility |
+| --- | --- |
+| `docs/handbook.md` | Organizes current usage, design, security and validation guidance. |
+| `docs/reports/project-guide.docx` | Reviewed readable Word guide of the cited public source and dated evidence. |
+| `docs/reports/publications.json` | Binds exact Office bytes, source revision, page review and workflow observations. |
+| `docs/reports/documentation-refresh-2026-11-09.md` | Records publication checks, current review and historical-evidence limits. |
