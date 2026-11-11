@@ -1,0 +1,70 @@
+{
+  "schema": 1,
+  "repository": "forge2d-engine",
+  "runtimeVersion": "1.1.0",
+  "runtimeSource": "4ba77538f5d3025677c51dc3948c1870d2aff963",
+  "createdAt": "2026-11-11T06:23:42.248Z",
+  "author": "Jason Stys",
+  "document": "windows-application-guide-1.1.0.docx",
+  "sha256": "0fe5340cf4c7190b34fff22b9d5733bb3fb89bb6d6d99654847c72b5b97693fb",
+  "screenshots": [
+    {
+      "file": "editor-layers.png",
+      "sha256": "6bcb6a818de2679d52489a664afef75d769749281414f775d437f4572cbcf7e8",
+      "width": 1240,
+      "height": 850,
+      "caption": "The installed editor applies the selected collision categories and masks to the authored scene. Overlap reporting is distinct from physical collision response."
+    },
+    {
+      "file": "editor-play.png",
+      "sha256": "664ae3e88cecbf0fb7f812472784134c1d551812e89d19953c333865d95bbee3",
+      "width": 1240,
+      "height": 850,
+      "caption": "The same editor displays the actual engine scene and input replay, with the current tick, authored source and recording visible."
+    }
+  ],
+  "snippets": [
+    {
+      "file": "src/editor.cpp",
+      "first": 18,
+      "last": 35,
+      "sha256": "0a3ba9336ccce75dc424cef977bea511d4d33e3f7ae91fddfe93b8e0237a4bd0",
+      "url": "https://github.com/JasonStys/forge2d-engine/blob/4ba77538f5d3025677c51dc3948c1870d2aff963/src/editor.cpp#L18"
+    }
+  ],
+  "observedTests": [
+    {
+      "name": "Real native workflows",
+      "observed": "The installed three-phase consumer verified actual play/timer inputs, replay/export, exact authored-scene restart and preserved corrupt-profile recovery.",
+      "result": "Passed"
+    },
+    {
+      "name": "Source and security",
+      "observed": "All required main workflows for the runtime revision passed; processed CodeQL analyses reported zero open main alerts before release.",
+      "result": "Passed"
+    },
+    {
+      "name": "Distribution identity",
+      "observed": "All 2 assets matched provider/checksum identities; all 6 installed files remained unchanged during acceptance.",
+      "result": "Verified"
+    },
+    {
+      "name": "PC scope",
+      "observed": "New per-user version folder and individual links verified. Synthetic profiles only; existing data and Docker were not used or changed.",
+      "result": "Verified"
+    }
+  ],
+  "visualReview": {
+    "approved": true,
+    "reviewer": "root",
+    "ooxmlSchema": "passed",
+    "pages": {
+      "page-1.png": "8f4fb8c1f26de781719e802fea0b1804a48a9ae7944c37ea0aa8d82492813c46",
+      "page-2.png": "53b9ea35cbbebb145a20c6ba59b39625b1b09a2a50b56a35f888465b9b8d00ce",
+      "page-3.png": "560ca7bf905edea1388c94ea3cd01c890aba9499b05eedc8703ba35e16397234",
+      "page-4.png": "9f4cf82fdd6fa4d64350bc9bdb256b050cd62f007372a1720ede411c727771ed"
+    },
+    "scope": "All four final page contents individually inspected; only exact identical pixels carry prior inspection.",
+    "checkedUtc": "2026-11-11T07:15:07.512506+00:00"
+  }
+}
