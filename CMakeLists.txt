@@ -111,6 +111,9 @@ if(WIN32)
   target_link_libraries(Forge2DEditor PRIVATE Forge2D::Core comdlg32 gdiplus bcrypt shell32 ole32)
   target_compile_definitions(Forge2DEditor PRIVATE UNICODE _UNICODE
     FORGE2D_NATIVE_SOURCE="${FORGE2D_NATIVE_SOURCE}" FORGE2D_NATIVE_DIRTY=${FORGE2D_NATIVE_DIRTY})
+  if(MINGW)
+    target_link_options(Forge2DEditor PRIVATE -municode)
+  endif()
   forge2d_set_warnings(Forge2DEditor)
   add_custom_command(TARGET Forge2DEditor POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory

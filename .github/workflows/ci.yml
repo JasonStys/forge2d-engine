@@ -69,28 +69,28 @@ jobs:
           if-no-files-found: error
 
   windows:
-    name: Windows MSVC
+    name: Windows MinGW (MSVC also tested by native package job)
     runs-on: windows-latest
     steps:
       - name: Check out source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Configure and build
         run: |
-          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++
           cmake --build build --parallel 2
       - name: Run tests and benchmark
         run: |
           ctest --test-dir build --output-on-failure
           New-Item -ItemType Directory -Force docs/reports/generated | Out-Null
-          ./build/forge2d_benchmark.exe | Tee-Object docs/reports/generated/benchmark-msvc.json
+          ./build/forge2d_benchmark.exe | Tee-Object docs/reports/generated/benchmark-mingw.json
           ./build/forge2d_arena.exe assets/arena.scene out/ci
       - name: Upload Windows evidence
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: windows-msvc-evidence
+          name: windows-mingw-evidence
           path: |
-            docs/reports/generated/benchmark-msvc.json
+            docs/reports/generated/benchmark-mingw.json
             out/ci
           if-no-files-found: error
 

@@ -38,6 +38,15 @@ conversion; that was fixed before acceptance passed. The failed evidence remains
 deadline, assertion or core oracle was relaxed. A packaging-shell hash cmdlet availability issue was
 fixed with the standard .NET streaming SHA256 API, leaving package hashes independently verifiable.
 
+The first PR integration at `03c0175` passed actual Windows extracted-package acceptance and the
+Linux GCC/Clang, coverage, sanitizers/fuzz, clang-tidy, SDL and repository lanes. Two other Windows
+jobs selected MinGW despite an old MSVC label; their Unicode `wWinMain` link required `-municode`.
+The original Windows compiler lane is now explicitly GCC/MinGW and labelled accordingly; actual
+MSVC remains exercised by native packaging. The container's explicit target list also omitted the
+new editor-model test before running all CTests; that target is now built. These were real build/
+workflow integration faults, corrected without disabling tests. Corrective hosted results remain
+pending; Docker on the PC was not changed or used.
+
 Boundaries: this is an unsigned Windows portable app, not an installer, signing proof, populated-user
 migration or clean-machine certification. Actual own-window controls/timers were used; a human's
 desktop-icon click, file-dialog selection, keyboard accessibility and every OS failure condition were

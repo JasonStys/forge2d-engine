@@ -9,7 +9,7 @@ RUN apt-get update \
 WORKDIR /source
 COPY . .
 RUN cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release \
-    && cmake --build build --target forge2d_arena forge2d_tests forge2d_benchmark --parallel \
+    && cmake --build build --target forge2d_arena forge2d_tests forge2d_editor_tests forge2d_benchmark --parallel \
     && ctest --test-dir build --output-on-failure \
     && ./build/forge2d_benchmark
 
