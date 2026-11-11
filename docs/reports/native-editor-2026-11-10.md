@@ -47,6 +47,14 @@ new editor-model test before running all CTests; that target is now built. These
 workflow integration faults, corrected without disabling tests. Corrective hosted results remain
 pending; Docker on the PC was not changed or used.
 
+The corrective PR then passed all workflow jobs, but the aggregate code-scanning check was neutral:
+converting the original Ubuntu analysis to explicitly categorized matrix jobs changed its required
+configuration identity. Actual API records showed 58 C/C++ rules completed on both platforms, while
+the original main analysis used `.github/workflows/codeql.yml:analyze` as both key/category. The
+original workflow never declared Actions analysis. Its genuine Ubuntu `analyze` job is now retained
+unchanged, with an independent Windows job adding real Win32 extraction. No query, supported source
+scope or successful-result requirement was removed or substituted with a nominal placeholder.
+
 Boundaries: this is an unsigned Windows portable app, not an installer, signing proof, populated-user
 migration or clean-machine certification. Actual own-window controls/timers were used; a human's
 desktop-icon click, file-dialog selection, keyboard accessibility and every OS failure condition were

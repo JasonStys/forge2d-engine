@@ -17,13 +17,8 @@ permissions:
 
 jobs:
   analyze:
-    name: Analyze C and C++ (${{ matrix.os }})
-    runs-on: ${{ matrix.os }}
-    timeout-minutes: 20
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, windows-latest]
+    name: Analyze C and C++
+    runs-on: ubuntu-latest
     steps:
       - name: Check out source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -38,5 +33,24 @@ jobs:
           cmake --build build --parallel 2
       - name: Analyze
         uses: github/codeql-action/analyze@24c54180a607b1449ed407dd24f251e4e9147c8d # v4.38.3; coordinated version
+
+  analyze-windows:
+    name: Analyze native Windows C and C++
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          category: /language:c-cpp/os:${{ matrix.os }}
+          persist-credentials: false
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@24c54180a607b1449ed407dd24f251e4e9147c8d # v4.38.3; coordinated version
+        with:
+          languages: c-cpp
+          build-mode: manual
+      - name: Build actual native and core targets
+        run: |
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug
+          cmake --build build --parallel 2
+      - name: Analyze native Windows source
+        uses: github/codeql-action/analyze@24c54180a607b1449ed407dd24f251e4e9147c8d # v4.38.3; coordinated version
