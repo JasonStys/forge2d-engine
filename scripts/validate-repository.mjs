@@ -16,8 +16,8 @@ const requiredFiles = [
   "docs/testing.md", "docs/adr/0001-headless-core-and-optional-sdl3.md",
   "docs/reports/benchmark.md", "docs/reports/test-summary.md", "docs/reports/validation.md",
 ];
-const headerExtensions = new Set([".c", ".cpp", ".h", ".hpp", ".mjs", ".sh"]);
-const excludedDirectories = new Set([".git", ".cache", "build", "coverage", "dist", "out"]);
+const headerExtensions = new Set([".c", ".cpp", ".h", ".hpp", ".mjs", ".sh", ".ps1", ".py", ".rc"]);
+const excludedDirectories = new Set([".git", ".cache", ".runtime", "artifacts", "release", "build", "coverage", "dist", "out"]);
 
 /** Recursively list authored files while excluding generated output and dependencies. */
 function walk(directory) {

@@ -2,7 +2,7 @@
 # Purpose: Configure the portable engine core, tests, benchmark, sample, and optional SDL3 frontend.
 cmake_minimum_required(VERSION 3.25)
 
-project(forge2d_engine VERSION 1.0.0 LANGUAGES C CXX)
+project(forge2d_engine VERSION 1.1.0 LANGUAGES C CXX)
 
 include(CTest)
 include(GNUInstallDirs)
@@ -64,6 +64,7 @@ forge2d_enable_sanitizers(forge2d_platform_c)
 forge2d_enable_coverage(forge2d_platform_c)
 
 add_library(forge2d_core STATIC
+  src/editor.cpp
   src/collision.cpp
   src/pathfinding.cpp
   src/replay.cpp
@@ -86,6 +87,38 @@ target_link_libraries(forge2d_arena PRIVATE Forge2D::Core)
 forge2d_set_warnings(forge2d_arena)
 forge2d_enable_sanitizers(forge2d_arena)
 forge2d_enable_coverage(forge2d_arena)
+
+if(WIN32)
+  enable_language(RC)
+  set(FORGE2D_NATIVE_SOURCE "unavailable")
+  set(FORGE2D_NATIVE_DIRTY "true")
+  find_package(Git QUIET)
+  if(GIT_FOUND)
+    execute_process(COMMAND ${GIT_EXECUTABLE} -c safe.directory=${CMAKE_CURRENT_SOURCE_DIR}
+      rev-parse HEAD WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+      OUTPUT_VARIABLE native_source OUTPUT_STRIP_TRAILING_WHITESPACE RESULT_VARIABLE native_git_result)
+    if(native_git_result EQUAL 0 AND native_source MATCHES "^[0-9a-f]+$")
+      set(FORGE2D_NATIVE_SOURCE "${native_source}")
+      execute_process(COMMAND ${GIT_EXECUTABLE} -c safe.directory=${CMAKE_CURRENT_SOURCE_DIR}
+        status --porcelain WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        OUTPUT_VARIABLE native_status OUTPUT_STRIP_TRAILING_WHITESPACE)
+      if(native_status STREQUAL "")
+        set(FORGE2D_NATIVE_DIRTY "false")
+      endif()
+    endif()
+  endif()
+  add_executable(Forge2DEditor WIN32 apps/forge2d_editor.cpp apps/editor_files.cpp apps/editor.rc)
+  target_link_libraries(Forge2DEditor PRIVATE Forge2D::Core comdlg32 gdiplus bcrypt shell32 ole32)
+  target_compile_definitions(Forge2DEditor PRIVATE UNICODE _UNICODE
+    FORGE2D_NATIVE_SOURCE="${FORGE2D_NATIVE_SOURCE}" FORGE2D_NATIVE_DIRTY=${FORGE2D_NATIVE_DIRTY})
+  if(MINGW)
+    target_link_options(Forge2DEditor PRIVATE -municode)
+  endif()
+  forge2d_set_warnings(Forge2DEditor)
+  add_custom_command(TARGET Forge2DEditor POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+      ${CMAKE_CURRENT_SOURCE_DIR}/assets $<TARGET_FILE_DIR:Forge2DEditor>/assets)
+endif()
 
 if(FORGE2D_BUILD_SDL)
   include(FetchContent)
@@ -113,6 +146,19 @@ if(FORGE2D_BUILD_TESTS)
   forge2d_enable_sanitizers(forge2d_tests)
   forge2d_enable_coverage(forge2d_tests)
   add_test(NAME forge2d_tests COMMAND forge2d_tests)
+  add_executable(forge2d_editor_tests tests/test_editor.cpp)
+  target_link_libraries(forge2d_editor_tests PRIVATE Forge2D::Core)
+  forge2d_set_warnings(forge2d_editor_tests)
+  forge2d_enable_sanitizers(forge2d_editor_tests)
+  forge2d_enable_coverage(forge2d_editor_tests)
+  add_test(NAME forge2d_editor_tests COMMAND forge2d_editor_tests)
+  if(WIN32)
+    add_executable(forge2d_editor_files_tests tests/test_editor_files.cpp apps/editor_files.cpp)
+    target_link_libraries(forge2d_editor_files_tests PRIVATE Forge2D::Core bcrypt shell32 ole32)
+    target_compile_definitions(forge2d_editor_files_tests PRIVATE UNICODE _UNICODE)
+    forge2d_set_warnings(forge2d_editor_files_tests)
+    add_test(NAME forge2d_editor_files_tests COMMAND forge2d_editor_files_tests)
+  endif()
 endif()
 
 if(FORGE2D_BUILD_BENCHMARKS)

@@ -2,6 +2,11 @@
 
 By Jason Stys.
 
+Current native work: [Forge2D Editor usage](native-editor.md) and
+[actual native validation](reports/native-editor-2026-11-10.md) describe the new 1.1.0 Windows
+scene/edit/play/replay workflow. The Word edition below retains its explicitly cited historical
+baseline until the separately reviewed updated guide is produced.
+
 The implementation adds bidirectional collision category and mask filters, versioned scene migration, deterministic state hashes and initial/final overlap CSV inspection.
 
 Supports practical game-world collision layers and reproducible debugging against independent geometry oracles.

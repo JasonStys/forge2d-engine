@@ -96,6 +96,26 @@ For declaration-level locations, see the generated [code index](code-index.md).
 | `docs/reports/validation.md` | Records compiler, SDL, repository, artifact, and pending hosted-CI validation. |
 | `docs/reports/generated/.gitkeep` | Preserves the otherwise-empty directory used for generated CI reports. |
 
+## Native editor additions
+
+| File | Responsibility |
+| --- | --- |
+| `include/forge2d/editor.hpp` | Public bounded scene/edit/play/replay model contract. |
+| `src/editor.cpp` | Uses actual engine parsers, world and renderer while preserving authored/runtime state separation. |
+| `apps/forge2d_editor.cpp` | Real Win32 scene editor, focused-canvas input, fixed-tick play, help, recovery and exports. |
+| `apps/editor_files.hpp` | OS-handle ownership and bounded/atomic local-file interfaces. |
+| `apps/editor_files.cpp` | Descriptor-bound UTF-8 reads, flushed atomic saves and OS-local profile selection. |
+| `apps/editor.rc` | Embedded Windows author and product version metadata. |
+| `tests/test_editor.cpp` | Independent scene/edit/replay/boundary/filter/translation model oracles. |
+| `tests/test_editor_files.cpp` | Actual Windows file, hardlink, UTF-8 and byte-budget cases. |
+| `scripts/build-native.ps1` | Static-runtime build, real tests and fresh portable ZIP/source/hash metadata. |
+| `scripts/smoke-native.py` | Extracted actual EXE, own-window/timer, export and two-process persistence acceptance. |
+| `.github/workflows/native-app.yml` | Actual package CI with bounded proof artifacts and manual-only full-package retention. |
+| `docs/native-editor.md` | Usage, fields, profile/recovery, build, boundaries and actual captures. |
+| `docs/reports/native-editor-2026-11-10.md` | Actual observed validation and pending hosted/installer distinctions. |
+| `docs/images/native-editor-play.png` | Actual custom-scene/replay native window. |
+| `docs/images/native-editor-layers.png` | Actual collision-layer scene in the same editor. |
+
 ## Reviewed documentation editions
 
 | File | Responsibility |

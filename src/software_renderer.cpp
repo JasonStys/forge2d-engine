@@ -92,24 +92,27 @@ std::uint64_t Image::pixel_hash() const noexcept {
     return hash;
 }
 
-void render_world(Image& image, const World& world, Vec2i world_size) {
+void render_world(Image& image, const World& world, Vec2i world_size, Vec2i world_origin) {
     if (world_size.x <= 0 || world_size.y <= 0) {
         throw std::invalid_argument("render world size must be positive");
     }
     image.clear(0x101827FFU);
     for (const auto& entity : world.snapshot()) {
-        const auto left = project_coordinate(
-            static_cast<std::int64_t>(entity.transform.position.x) - entity.body.half_extent.x,
-            world_size.x, image.width());
-        const auto right = project_coordinate(
-            static_cast<std::int64_t>(entity.transform.position.x) + entity.body.half_extent.x,
-            world_size.x, image.width());
+        const auto left =
+            project_coordinate(static_cast<std::int64_t>(entity.transform.position.x) -
+                                   world_origin.x - entity.body.half_extent.x,
+                               world_size.x, image.width());
+        const auto right =
+            project_coordinate(static_cast<std::int64_t>(entity.transform.position.x) -
+                                   world_origin.x + entity.body.half_extent.x,
+                               world_size.x, image.width());
         const auto top = project_coordinate(static_cast<std::int64_t>(entity.transform.position.y) -
-                                                entity.body.half_extent.y,
+                                                world_origin.y - entity.body.half_extent.y,
                                             world_size.y, image.height());
-        const auto bottom = project_coordinate(
-            static_cast<std::int64_t>(entity.transform.position.y) + entity.body.half_extent.y,
-            world_size.y, image.height());
+        const auto bottom =
+            project_coordinate(static_cast<std::int64_t>(entity.transform.position.y) -
+                                   world_origin.y + entity.body.half_extent.y,
+                               world_size.y, image.height());
         image.fill_rect(left, top, right, bottom, entity.sprite.rgba);
     }
 }

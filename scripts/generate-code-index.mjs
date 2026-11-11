@@ -10,8 +10,8 @@ import { fileURLToPath } from "node:url";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const outputPath = join(root, "docs", "code-index.md");
-const supportedExtensions = new Set([".c", ".cpp", ".h", ".hpp", ".mjs", ".sh"]);
-const excludedDirectories = new Set([".git", ".cache", "build", "coverage", "dist", "out"]);
+const supportedExtensions = new Set([".c", ".cpp", ".h", ".hpp", ".mjs", ".sh", ".ps1", ".py", ".rc"]);
+const excludedDirectories = new Set([".git", ".cache", ".runtime", "artifacts", "release", "build", "coverage", "dist", "out"]);
 const typePattern = /^\s*(?:class|struct|enum(?:\s+class)?)\s+([A-Za-z_][\w]*)/;
 const functionPattern = /^\s*(?:\[\[[^\]]+\]\]\s*)?(?:(?:constexpr|explicit|inline|static|virtual)\s+)*(?:[\w:<>,*&]+\s+)+((?:[A-Za-z_][\w]*::)*(?:~?[A-Za-z_][\w]*|operator(?:<=>|==|\[\]|\(\)|[-+*/=<>]+)))\s*\(/;
 const qualifiedConstructorPattern = /^\s*((?:[A-Za-z_][\w]*::)+~?[A-Za-z_][\w]*)\s*\(/;
@@ -35,6 +35,14 @@ function declarations(path) {
   const lines = readFileSync(path, "utf8").split(/\r?\n/);
   const knownTypes = new Set(lines.flatMap((line) => line.match(typePattern)?.[1] ?? []));
   return lines.flatMap((line, index) => {
+    if (extension === ".py") {
+      const match = line.match(/^\s*(?:def|class)\s+([A-Za-z_][\w]*)/) ?? line.match(/^([A-Z_][\w]*)\s*=/);
+      return match ? [{ line: index + 1, name: match[1] }] : [];
+    }
+    if (extension === ".ps1") {
+      const match = line.match(/^\s*function\s+([\w-]+)/i) ?? line.match(/^\s*\$([\w]+)\s*=/);
+      return match ? [{ line: index + 1, name: match[1] }] : [];
+    }
     if (extension === ".mjs") {
       const match = line.match(/\b(?:function|class)\s+([A-Za-z_$][\w$]*)/) ??
                     line.match(/\b(?:const|let)\s+([A-Za-z_$][\w$]*)\b/);

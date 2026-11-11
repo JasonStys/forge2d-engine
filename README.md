@@ -8,6 +8,23 @@ generation-safe entities, sparse-set components, fixed-timestep simulation, spat
 A* pathfinding, versioned scenes and replays, bounded allocation, software screenshot evidence, an
 optional SDL3 frontend, and regression budgets.
 
+The **Windows native Forge2D Editor** adds an actual scene-edit/play workflow over that same C++
+engine. Open `Forge2DEditor.exe` from an extracted portable candidate: edit all strict scene fields,
+Apply with validation, move the player with focused-canvas keys, Play/Pause/Step, inspect overlap
+counts, save an authored project, import recorded inputs and export matching scene/replay/image/
+snapshot evidence. Prepared arena and collision-layer files are normal inputs inside the full app.
+The application needs no IDE, compiler, Python, Node or network at runtime.
+
+Project saves live under the current OS account's local `Forge2DEditor` profile, outside the program
+folder. Restart restores the authored scene **paused at tick zero**. Invalid Apply preserves the
+previous world; closing warns about unapplied/unsaved edits; a second profile owner is refused.
+This is a small, purpose-built editor, not a complete commercial game engine: masks detect AABB
+overlaps without physical response, and imported replay files need their matching scene.
+See [native usage, fields, limits and build](docs/native-editor.md),
+[observed validation](docs/reports/native-editor-2026-11-10.md) and the
+[native workflow](.github/workflows/native-app.yml). Created by **Jason Stys**;
+[source/contact](https://github.com/JasonStys).
+
 The project is intentionally smaller than a commercial engine. Its goal is to demonstrate memory
 ownership, data layout, deterministic behavior, parser safety, algorithmic trade-offs, portable
 build engineering, and honest performance evidence in a codebase a reviewer can understand.
@@ -37,6 +54,7 @@ application responsibilities.
 - Four-neighbor A* with stable tie-breaking and explicit O((V+E) log V) analysis.
 - Versioned, bounded, strict scene/replay parsers plus a libFuzzer target.
 - Headless software rendering to portable PPM evidence and an optional SDL3 accelerated frontend.
+- C++/Win32 native source editor, fixed-tick play/replay, durable local project and evidence exports.
 - MSVC, GCC, and Clang builds; warnings-as-errors; ASan/UBSan; fuzz smoke; CodeQL; coverage;
   packaging; and a non-root headless container.
 
