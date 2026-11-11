@@ -17,8 +17,13 @@ permissions:
 
 jobs:
   analyze:
-    name: Analyze C and C++
-    runs-on: ubuntu-latest
+    name: Analyze C and C++ (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
     steps:
       - name: Check out source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -33,3 +38,5 @@ jobs:
           cmake --build build --parallel 2
       - name: Analyze
         uses: github/codeql-action/analyze@24c54180a607b1449ed407dd24f251e4e9147c8d # v4.38.3; coordinated version
+        with:
+          category: /language:c-cpp/os:${{ matrix.os }}

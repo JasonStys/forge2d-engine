@@ -1,0 +1,63 @@
+# File: native-app.yml
+# Purpose: Build and extract-test the actual Windows editor; retain bounded proof, not routine full packages.
+name: Native application
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      retain_package:
+        description: Retain the unsigned portable candidate for reviewed main-source distribution
+        type: boolean
+        required: false
+        default: false
+permissions:
+  contents: read
+concurrency:
+  group: native-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  windows:
+    name: Actual Windows editor and extracted portable package
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.14.10"
+          check-latest: true
+      - name: Build static-runtime executable and actual core/file tests
+        shell: pwsh
+        run: |
+          $vs = & "${env:ProgramFiles(x86)}/Microsoft Visual Studio/Installer/vswhere.exe" -latest -products '*' -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+          if (-not $vs -or -not (Test-Path -LiteralPath "$vs/Common7/Tools/VsDevCmd.bat")) { throw 'Reviewed MSVC toolchain unavailable.' }
+          $command = '"' + $vs + '/Common7/Tools/VsDevCmd.bat" -arch=x64 -host_arch=x64 && pwsh -NoProfile -File scripts/build-native.ps1 -Output release/windows'
+          & cmd.exe /d /s /c $command
+          if ($LASTEXITCODE -ne 0) { throw 'Native build/tests failed.' }
+      - name: Extract package and exercise native play, restart and corrupt-profile recovery
+        run: python scripts/smoke-native.py release/windows/Forge2DEditor-1.1.0-windows-x64.zip artifacts/native/hosted
+      - name: Retain bounded synthetic receipts and own-window screenshots
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: forge2d-native-proof
+          path: |
+            artifacts/native/hosted/*.json
+            artifacts/native/hosted/*.png
+            artifacts/native/hosted/*failure.txt
+          if-no-files-found: warn
+          retention-days: 1
+      - name: Retain full unsigned package only on explicit trusted-main request
+        if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.retain_package
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: forge2d-reviewed-portable-candidate
+          path: |
+            release/windows/*.zip
+            release/windows/*.sha256
+          if-no-files-found: error
+          retention-days: 1

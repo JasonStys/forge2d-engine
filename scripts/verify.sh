@@ -13,9 +13,9 @@ mapfile -t SOURCES < <(find apps benchmarks fuzz include platform src tests \
 clang-format --dry-run --Werror "${SOURCES[@]}"
 cmake -S . -B "${BUILD_DIR}" -G Ninja -DCMAKE_BUILD_TYPE=Release
 cmake --build "${BUILD_DIR}" --parallel
-clang-tidy -p "${BUILD_DIR}" src/collision.cpp src/pathfinding.cpp src/replay.cpp src/scene.cpp \
+clang-tidy -p "${BUILD_DIR}" src/editor.cpp src/collision.cpp src/pathfinding.cpp src/replay.cpp src/scene.cpp \
   src/software_renderer.cpp src/world.cpp apps/forge2d_arena.cpp tests/test_main.cpp \
-  benchmarks/benchmark.cpp
+  tests/test_editor.cpp benchmarks/benchmark.cpp
 ctest --test-dir "${BUILD_DIR}" --output-on-failure
 "${BUILD_DIR}/forge2d_benchmark" | tee docs/reports/generated/benchmark.json
 "${BUILD_DIR}/forge2d_arena" assets/arena.scene out/verify

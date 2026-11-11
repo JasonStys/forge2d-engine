@@ -111,9 +111,9 @@ jobs:
           -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
       - name: Analyze authored targets
         run: >-
-          clang-tidy -p build src/collision.cpp src/pathfinding.cpp src/replay.cpp src/scene.cpp
+          clang-tidy -p build src/editor.cpp src/collision.cpp src/pathfinding.cpp src/replay.cpp src/scene.cpp
           src/software_renderer.cpp src/world.cpp apps/forge2d_arena.cpp tests/test_main.cpp
-          benchmarks/benchmark.cpp
+          tests/test_editor.cpp benchmarks/benchmark.cpp
 
   coverage:
     name: Coverage gate

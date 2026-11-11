@@ -38,6 +38,7 @@ class Image {
     std::vector<std::uint32_t> pixels_{};
 };
 
-void render_world(Image& image, const World& world, Vec2i world_size = {10'000, 10'000});
+void render_world(Image& image, const World& world, Vec2i world_size = {10'000, 10'000},
+                  Vec2i world_origin = {});
 
 } // namespace forge2d

@@ -1,6 +1,9 @@
 # File: .gitignore
 # Purpose: Exclude build products, editor state, generated reports, and local runtime output.
 .cache/
+.runtime/
+artifacts/
+release/
 .idea/
 .vs/
 .vscode/
